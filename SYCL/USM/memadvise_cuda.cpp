@@ -24,7 +24,7 @@ int main() {
   queue q;
   auto dev = q.get_device();
   auto ctx = q.get_context();
-  if (!dev.get_info<info::device::usm_shared_allocations>()){
+  if (!dev.get_info<info::device::usm_shared_allocations>()) {
     std::cout << "Shared USM is not supported. Skipping test." << std::endl;
     return 0;
   }
@@ -46,8 +46,8 @@ int main() {
       PI_MEM_ADVISE_CUDA_UNSET_PREFERRED_LOCATION_HOST,
       PI_MEM_ADVISE_CUDA_SET_ACCESSED_BY_HOST,
       PI_MEM_ADVISE_CUDA_UNSET_ACCESSED_BY_HOST,
-      };
-  for(int advice : valid_advices){
+  };
+  for (int advice : valid_advices) {
     q.mem_advise(ptr, size, advice);
   }
 
