@@ -7,10 +7,14 @@
 //
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu
-// UNSUPPORTED: cuda || hip
+// UNSUPPORTED: gpu-intel-dg1,cuda,hip
+// UNSUPPORTED: ze_debug-1,ze_debug4
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
+
+// The test checks raw send functionality with atomic write implementation
+// on SKL. It does not work on DG1 due to send instruction incompatibility.
 
 #include "esimd_test_utils.hpp"
 
@@ -65,7 +69,7 @@ int checkHistogram(unsigned int *refHistogram, unsigned int *hist) {
 using namespace sycl::ext::intel::experimental;
 using namespace sycl::ext::intel::experimental::esimd;
 
-template <EsimdAtomicOpType Op, typename T, int n>
+template <atomic_op Op, typename T, int n>
 ESIMD_INLINE void atomic_write(T *bins, simd<unsigned, n> offset,
                                simd<T, n> src0, simd_mask<n> pred) {
   simd<T, n> oldDst;
