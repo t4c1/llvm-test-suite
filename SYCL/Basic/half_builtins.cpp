@@ -213,8 +213,6 @@ constexpr int N = 16 * 3; // divisible by all vector sizes
   TEST_BUILTIN_3_VEC_IMPL(NAME, 16)
 
 int main() {
-
-
   queue q;
   std::vector<half> a(N), b(N), c(N), d(N);
   for (int i = 0; i < N; i++) {
