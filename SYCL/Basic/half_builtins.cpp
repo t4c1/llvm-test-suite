@@ -16,6 +16,11 @@ using namespace cl::sycl;
 
 constexpr int N = 16 * 3; // divisible by all vector sizes
 
+bool check(half a, half b) {
+  return fabs(2 * (a - b) / (a + b)) <
+         std::numeric_limits<cl::sycl::half>::epsilon() || a < std::numeric_limits<cl::sycl::half>::min();
+}
+
 #define TEST_BUILTIN_1_VEC_IMPL(NAME, SZ)                                      \
   {                                                                            \
     buffer<half##SZ> a_buf((half##SZ *)&a[0], N / SZ);                         \
@@ -28,8 +33,7 @@ constexpr int N = 16 * 3; // divisible by all vector sizes
     });                                                                        \
   }                                                                            \
   for (int i = 0; i < N; i++) {                                                \
-    assert(fabs(d[i] - NAME(a[i])) <                                           \
-           std::numeric_limits<cl::sycl::half>::epsilon());                    \
+    assert(check(d[i], NAME(a[i])));                                           \
   }
 
 // vectors of size 3 need separate test, as they actually have the size of 4
@@ -47,8 +51,7 @@ constexpr int N = 16 * 3; // divisible by all vector sizes
   }                                                                            \
   for (int i = 0; i < N; i++) {                                                \
     if (i % 4 != 3) {                                                          \
-      assert(fabs(d[i] - NAME(a[i])) <                                         \
-             std::numeric_limits<cl::sycl::half>::epsilon());                  \
+      assert(check(d[i], NAME(a[i])));                                         \
     }                                                                          \
   }
 
@@ -63,8 +66,7 @@ constexpr int N = 16 * 3; // divisible by all vector sizes
     });                                                                        \
   }                                                                            \
   for (int i = 0; i < N; i++) {                                                \
-    assert(fabs(d[i] - NAME(a[i])) <                                           \
-           std::numeric_limits<cl::sycl::half>::epsilon());                    \
+    assert(check(d[i], NAME(a[i])));                                           \
   }
 
 #define TEST_BUILTIN_1(NAME)                                                   \
@@ -89,8 +91,7 @@ constexpr int N = 16 * 3; // divisible by all vector sizes
     });                                                                        \
   }                                                                            \
   for (int i = 0; i < N; i++) {                                                \
-    assert(fabs(d[i] - NAME(a[i], b[i])) <                                     \
-           std::numeric_limits<cl::sycl::half>::epsilon());                    \
+    assert(check(d[i], NAME(a[i], b[i])));                                     \
   }
 
 #define TEST_BUILTIN_2_VEC3_IMPL(NAME)                                         \
@@ -108,8 +109,7 @@ constexpr int N = 16 * 3; // divisible by all vector sizes
   }                                                                            \
   for (int i = 0; i < N; i++) {                                                \
     if (i % 4 != 3) {                                                          \
-      assert(fabs(d[i] - NAME(a[i], b[i])) <                                   \
-             std::numeric_limits<cl::sycl::half>::epsilon());                  \
+      assert(check(d[i], NAME(a[i], b[i])));                                   \
     }                                                                          \
   }
 
@@ -127,8 +127,7 @@ constexpr int N = 16 * 3; // divisible by all vector sizes
     });                                                                        \
   }                                                                            \
   for (int i = 0; i < N; i++) {                                                \
-    assert(fabs(d[i] - NAME(a[i], b[i])) <                                     \
-           std::numeric_limits<cl::sycl::half>::epsilon());                    \
+    assert(check(d[i], NAME(a[i], b[i])));                                     \
   }
 
 #define TEST_BUILTIN_2(NAME)                                                   \
@@ -156,8 +155,7 @@ constexpr int N = 16 * 3; // divisible by all vector sizes
     });                                                                        \
   }                                                                            \
   for (int i = 0; i < N; i++) {                                                \
-    assert(fabs(d[i] - NAME(a[i], b[i], c[i])) <                               \
-           std::numeric_limits<cl::sycl::half>::epsilon());                    \
+    assert(check(d[i], NAME(a[i], b[i], c[i])));                               \
   }
 
 #define TEST_BUILTIN_3_VEC3_IMPL(NAME)                                         \
@@ -178,8 +176,7 @@ constexpr int N = 16 * 3; // divisible by all vector sizes
   }                                                                            \
   for (int i = 0; i < N; i++) {                                                \
     if (i % 4 != 3) {                                                          \
-      assert(fabs(d[i] - NAME(a[i], b[i], c[i])) <                             \
-             std::numeric_limits<cl::sycl::half>::epsilon());                  \
+      assert(check(d[i], NAME(a[i], b[i], c[i])));                             \
     }                                                                          \
   }
 
@@ -200,8 +197,7 @@ constexpr int N = 16 * 3; // divisible by all vector sizes
     });                                                                        \
   }                                                                            \
   for (int i = 0; i < N; i++) {                                                \
-    assert(fabs(d[i] - NAME(a[i], b[i], c[i])) <                               \
-           std::numeric_limits<cl::sycl::half>::epsilon());                    \
+    assert(check(d[i], NAME(a[i], b[i], c[i])));                               \
   }
 
 #define TEST_BUILTIN_3(NAME)                                                   \
