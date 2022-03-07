@@ -18,7 +18,8 @@ constexpr int N = 16 * 3; // divisible by all vector sizes
 
 bool check(half a, half b) {
   return fabs(2 * (a - b) / (a + b)) <
-         std::numeric_limits<cl::sycl::half>::epsilon() || a < std::numeric_limits<cl::sycl::half>::min();
+             std::numeric_limits<cl::sycl::half>::epsilon() ||
+         a < std::numeric_limits<cl::sycl::half>::min();
 }
 
 #define TEST_BUILTIN_1_VEC_IMPL(NAME, SZ)                                      \
