@@ -1,8 +1,6 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out -Xsycl-target-backend --cuda-gpu-arch=sm_80
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
-// RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
-// RUN: %ACC_RUN_PLACEHOLDER %t.out
+
 
 // Only cuda backend implements bf16
 // REQUIRES: cuda
@@ -10,7 +8,8 @@
 #include <CL/sycl.hpp>
 
 #include <cmath>
-#include <unordered_set>
+#include <vector>
+
 
 using namespace cl::sycl;
 using namespace cl::sycl::ext::oneapi;
