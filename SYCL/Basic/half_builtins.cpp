@@ -9,7 +9,6 @@
 
 #include <sycl/sycl.hpp>
 
-
 #include <cmath>
 #include <limits>
 
