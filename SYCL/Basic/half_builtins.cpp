@@ -7,7 +7,8 @@
 // OpenCL CPU driver does not support cl_khr_fp16 extension
 // UNSUPPORTED: cpu && opencl
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
+
 
 #include <cmath>
 #include <limits>
