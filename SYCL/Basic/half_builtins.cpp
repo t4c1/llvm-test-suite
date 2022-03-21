@@ -10,64 +10,57 @@
 #include <CL/sycl.hpp>
 
 #include <cmath>
-#include <unordered_set>
+#include <limits>
 
-using namespace cl::sycl;
+using namespace sycl;
 
-constexpr int N = 16 * 3; // divisible by all vector sizes
+constexpr int SZ_max = 16;
 
-bool check(half a, half b) {
-  return fabs(2 * (a - b) / (a + b)) <
-             std::numeric_limits<cl::sycl::half>::epsilon() ||
-         a < std::numeric_limits<cl::sycl::half>::min();
+bool check(float a, float b) {
+  return fabs(2 * (a - b) / (a + b)) < std::numeric_limits<half>::epsilon() ||
+         a < std::numeric_limits<half>::min();
+}
+
+template <int N> bool check(vec<float, N> a, vec<float, N> b) {
+  for (int i = 0; i < N; i++) {
+    if (!check(a[i], b[i])) {
+      return false;
+    }
+  }
+  return true;
 }
 
 #define TEST_BUILTIN_1_VEC_IMPL(NAME, SZ)                                      \
   {                                                                            \
-    buffer<half##SZ> a_buf((half##SZ *)&a[0], N / SZ);                         \
-    buffer<half##SZ> d_buf((half##SZ *)&d[0], N / SZ);                         \
-    q.submit([&](handler &cgh) {                                               \
-      auto A = a_buf.get_access<access::mode::read>(cgh);                      \
-      auto D = d_buf.get_access<access::mode::write>(cgh);                     \
-      cgh.parallel_for(N / SZ,                                                 \
-                       [=](id<1> index) { D[index] = NAME(A[index]); });       \
-    });                                                                        \
-  }                                                                            \
-  for (int i = 0; i < N; i++) {                                                \
-    assert(check(d[i], NAME(a[i])));                                           \
+    float##SZ *a = (float##SZ *)&A[0];                                         \
+    float##SZ *b = (float##SZ *)&B[0];                                         \
+    if (i < SZ_max / SZ) {                                                     \
+      if (!check(NAME(a[i]), NAME(a[i].convert<half>()).convert<float>())) {   \
+        err[0] = 1;                                                            \
+      }                                                                        \
+    }                                                                          \
   }
 
 // vectors of size 3 need separate test, as they actually have the size of 4
-// halfs
+// elements
 #define TEST_BUILTIN_1_VEC3_IMPL(NAME)                                         \
   {                                                                            \
-    buffer<half3> a_buf((half3 *)&a[0], N / 4);                                \
-    buffer<half3> d_buf((half3 *)&d[0], N / 4);                                \
-    q.submit([&](handler &cgh) {                                               \
-      auto A = a_buf.get_access<access::mode::read>(cgh);                      \
-      auto D = d_buf.get_access<access::mode::write>(cgh);                     \
-      cgh.parallel_for(N / 4,                                                  \
-                       [=](id<1> index) { D[index] = NAME(A[index]); });       \
-    });                                                                        \
-  }                                                                            \
-  for (int i = 0; i < N; i++) {                                                \
-    if (i % 4 != 3) {                                                          \
-      assert(check(d[i], NAME(a[i])));                                         \
+    float3 *a = (float3 *)&A[0];                                               \
+    float3 *b = (float3 *)&B[0];                                               \
+    if (i < SZ_max / 4) {                                                      \
+      if (!check(NAME(a[i]), NAME(a[i].convert<half>()).convert<float>())) {   \
+        err[0] = 1;                                                            \
+      }                                                                        \
     }                                                                          \
   }
 
 #define TEST_BUILTIN_1_SCAL_IMPL(NAME)                                         \
   {                                                                            \
-    buffer<half> a_buf(&a[0], N);                                              \
-    buffer<half> d_buf(&d[0], N);                                              \
-    q.submit([&](handler &cgh) {                                               \
-      auto A = a_buf.get_access<access::mode::read>(cgh);                      \
-      auto D = d_buf.get_access<access::mode::write>(cgh);                     \
-      cgh.parallel_for(N, [=](id<1> index) { D[index] = NAME(A[index]); });    \
-    });                                                                        \
-  }                                                                            \
-  for (int i = 0; i < N; i++) {                                                \
-    assert(check(d[i], NAME(a[i])));                                           \
+    float *a = (float *)&A[0];                                                 \
+    float *b = (float *)&B[0];                                                 \
+    if (!check(NAME(a[i]), (float)NAME((half)a[i]))) {                         \
+      err[0] = 1;                                                              \
+    }                                                                          \
   }
 
 #define TEST_BUILTIN_1(NAME)                                                   \
@@ -80,55 +73,37 @@ bool check(half a, half b) {
 
 #define TEST_BUILTIN_2_VEC_IMPL(NAME, SZ)                                      \
   {                                                                            \
-    buffer<half##SZ> a_buf((half##SZ *)&a[0], N / SZ);                         \
-    buffer<half##SZ> b_buf((half##SZ *)&b[0], N / SZ);                         \
-    buffer<half##SZ> d_buf((half##SZ *)&d[0], N / SZ);                         \
-    q.submit([&](handler &cgh) {                                               \
-      auto A = a_buf.get_access<access::mode::read>(cgh);                      \
-      auto B = b_buf.get_access<access::mode::read>(cgh);                      \
-      auto D = d_buf.get_access<access::mode::write>(cgh);                     \
-      cgh.parallel_for(                                                        \
-          N / SZ, [=](id<1> index) { D[index] = NAME(A[index], B[index]); });  \
-    });                                                                        \
-  }                                                                            \
-  for (int i = 0; i < N; i++) {                                                \
-    assert(check(d[i], NAME(a[i], b[i])));                                     \
+    float##SZ *a = (float##SZ *)&A[0];                                         \
+    float##SZ *b = (float##SZ *)&B[0];                                         \
+    if (i < SZ_max / SZ) {                                                     \
+      if (!check(NAME(a[i], b[i]),                                             \
+                 NAME(a[i].convert<half>(), b[i].convert<half>())              \
+                     .convert<float>())) {                                     \
+        err[0] = 1;                                                            \
+      }                                                                        \
+    }                                                                          \
   }
 
 #define TEST_BUILTIN_2_VEC3_IMPL(NAME)                                         \
   {                                                                            \
-    buffer<half3> a_buf((half3 *)&a[0], N / 4);                                \
-    buffer<half3> b_buf((half3 *)&b[0], N / 4);                                \
-    buffer<half3> d_buf((half3 *)&d[0], N / 4);                                \
-    q.submit([&](handler &cgh) {                                               \
-      auto A = a_buf.get_access<access::mode::read>(cgh);                      \
-      auto B = b_buf.get_access<access::mode::read>(cgh);                      \
-      auto D = d_buf.get_access<access::mode::write>(cgh);                     \
-      cgh.parallel_for(                                                        \
-          N / 4, [=](id<1> index) { D[index] = NAME(A[index], B[index]); });   \
-    });                                                                        \
-  }                                                                            \
-  for (int i = 0; i < N; i++) {                                                \
-    if (i % 4 != 3) {                                                          \
-      assert(check(d[i], NAME(a[i], b[i])));                                   \
+    float3 *a = (float3 *)&A[0];                                               \
+    float3 *b = (float3 *)&B[0];                                               \
+    if (i < SZ_max / 4) {                                                      \
+      if (!check(NAME(a[i], b[i]),                                             \
+                 NAME(a[i].convert<half>(), b[i].convert<half>())              \
+                     .convert<float>())) {                                     \
+        err[0] = 1;                                                            \
+      }                                                                        \
     }                                                                          \
   }
 
 #define TEST_BUILTIN_2_SCAL_IMPL(NAME)                                         \
   {                                                                            \
-    buffer<half> a_buf(&a[0], N);                                              \
-    buffer<half> b_buf(&b[0], N);                                              \
-    buffer<half> d_buf(&d[0], N);                                              \
-    q.submit([&](handler &cgh) {                                               \
-      auto A = a_buf.get_access<access::mode::read>(cgh);                      \
-      auto B = b_buf.get_access<access::mode::read>(cgh);                      \
-      auto D = d_buf.get_access<access::mode::write>(cgh);                     \
-      cgh.parallel_for(                                                        \
-          N, [=](id<1> index) { D[index] = NAME(A[index], B[index]); });       \
-    });                                                                        \
-  }                                                                            \
-  for (int i = 0; i < N; i++) {                                                \
-    assert(check(d[i], NAME(a[i], b[i])));                                     \
+    float *a = (float *)&A[0];                                                 \
+    float *b = (float *)&B[0];                                                 \
+    if (!check(NAME(a[i], b[i]), (float)NAME((half)a[i], (half)b[i]))) {       \
+      err[0] = 1;                                                              \
+    }                                                                          \
   }
 
 #define TEST_BUILTIN_2(NAME)                                                   \
@@ -141,64 +116,43 @@ bool check(half a, half b) {
 
 #define TEST_BUILTIN_3_VEC_IMPL(NAME, SZ)                                      \
   {                                                                            \
-    buffer<half##SZ> a_buf((half##SZ *)&a[0], N / SZ);                         \
-    buffer<half##SZ> b_buf((half##SZ *)&b[0], N / SZ);                         \
-    buffer<half##SZ> c_buf((half##SZ *)&c[0], N / SZ);                         \
-    buffer<half##SZ> d_buf((half##SZ *)&d[0], N / SZ);                         \
-    q.submit([&](handler &cgh) {                                               \
-      auto A = a_buf.get_access<access::mode::read>(cgh);                      \
-      auto B = b_buf.get_access<access::mode::read>(cgh);                      \
-      auto C = c_buf.get_access<access::mode::read>(cgh);                      \
-      auto D = d_buf.get_access<access::mode::write>(cgh);                     \
-      cgh.parallel_for(N / SZ, [=](id<1> index) {                              \
-        D[index] = NAME(A[index], B[index], C[index]);                         \
-      });                                                                      \
-    });                                                                        \
-  }                                                                            \
-  for (int i = 0; i < N; i++) {                                                \
-    assert(check(d[i], NAME(a[i], b[i], c[i])));                               \
+    float##SZ *a = (float##SZ *)&A[0];                                         \
+    float##SZ *b = (float##SZ *)&B[0];                                         \
+    float##SZ *c = (float##SZ *)&C[0];                                         \
+    if (i < SZ_max / SZ) {                                                     \
+      if (!check(NAME(a[i], b[i], c[i]),                                       \
+                 NAME(a[i].convert<half>(), b[i].convert<half>(),              \
+                      c[i].convert<half>())                                    \
+                     .convert<float>())) {                                     \
+        err[0] = 1;                                                            \
+      }                                                                        \
+    }                                                                          \
   }
 
 #define TEST_BUILTIN_3_VEC3_IMPL(NAME)                                         \
   {                                                                            \
-    buffer<half3> a_buf((half3 *)&a[0], N / 4);                                \
-    buffer<half3> b_buf((half3 *)&b[0], N / 4);                                \
-    buffer<half3> c_buf((half3 *)&c[0], N / 4);                                \
-    buffer<half3> d_buf((half3 *)&d[0], N / 4);                                \
-    q.submit([&](handler &cgh) {                                               \
-      auto A = a_buf.get_access<access::mode::read>(cgh);                      \
-      auto B = b_buf.get_access<access::mode::read>(cgh);                      \
-      auto C = c_buf.get_access<access::mode::read>(cgh);                      \
-      auto D = d_buf.get_access<access::mode::write>(cgh);                     \
-      cgh.parallel_for(N / 4, [=](id<1> index) {                               \
-        D[index] = NAME(A[index], B[index], C[index]);                         \
-      });                                                                      \
-    });                                                                        \
-  }                                                                            \
-  for (int i = 0; i < N; i++) {                                                \
-    if (i % 4 != 3) {                                                          \
-      assert(check(d[i], NAME(a[i], b[i], c[i])));                             \
+    float3 *a = (float3 *)&A[0];                                               \
+    float3 *b = (float3 *)&B[0];                                               \
+    float3 *c = (float3 *)&C[0];                                               \
+    if (i < SZ_max / 4) {                                                      \
+      if (!check(NAME(a[i], b[i], c[i]),                                       \
+                 NAME(a[i].convert<half>(), b[i].convert<half>(),              \
+                      c[i].convert<half>())                                    \
+                     .convert<float>())) {                                     \
+        err[0] = 1;                                                            \
+      }                                                                        \
     }                                                                          \
   }
 
 #define TEST_BUILTIN_3_SCAL_IMPL(NAME)                                         \
   {                                                                            \
-    buffer<half> a_buf(&a[0], N);                                              \
-    buffer<half> b_buf(&b[0], N);                                              \
-    buffer<half> c_buf(&c[0], N);                                              \
-    buffer<half> d_buf(&d[0], N);                                              \
-    q.submit([&](handler &cgh) {                                               \
-      auto A = a_buf.get_access<access::mode::read>(cgh);                      \
-      auto B = b_buf.get_access<access::mode::read>(cgh);                      \
-      auto C = c_buf.get_access<access::mode::read>(cgh);                      \
-      auto D = d_buf.get_access<access::mode::write>(cgh);                     \
-      cgh.parallel_for(N, [=](id<1> index) {                                   \
-        D[index] = NAME(A[index], B[index], C[index]);                         \
-      });                                                                      \
-    });                                                                        \
-  }                                                                            \
-  for (int i = 0; i < N; i++) {                                                \
-    assert(check(d[i], NAME(a[i], b[i], c[i])));                               \
+    float *a = (float *)&A[0];                                                 \
+    float *b = (float *)&B[0];                                                 \
+    float *c = (float *)&C[0];                                                 \
+    if (!check(NAME(a[i], b[i], c[i]),                                         \
+               (float)NAME((half)a[i], (half)b[i], (half)c[i]))) {             \
+      err[0] = 1;                                                              \
+    }                                                                          \
   }
 
 #define TEST_BUILTIN_3(NAME)                                                   \
@@ -211,17 +165,33 @@ bool check(half a, half b) {
 
 int main() {
   queue q;
-  std::vector<half> a(N), b(N), c(N), d(N);
-  for (int i = 0; i < N; i++) {
-    a[i] = i / (half)N;
-    b[i] = (N - i) / (half)N;
-    c[i] = (half)(3 * i);
+  float16 a, b, c, d;
+  for (int i = 0; i < SZ_max; i++) {
+    a[i] = i / (float)SZ_max;
+    b[i] = (SZ_max - i) / (float)SZ_max;
+    c[i] = (float)(3 * i);
   }
-
-  TEST_BUILTIN_1(fabs);
-  TEST_BUILTIN_2(fmin);
-  TEST_BUILTIN_2(fmax);
-  TEST_BUILTIN_3(fma);
+  int err = 0;
+  {
+    buffer<float16> a_buf(&a, 1);
+    buffer<float16> b_buf(&b, 1);
+    buffer<float16> c_buf(&c, 1);
+    buffer<int> err_buf(&err, 1);
+    q.submit([&](handler &cgh) {
+      auto A = a_buf.get_access<access::mode::read>(cgh);
+      auto B = b_buf.get_access<access::mode::read>(cgh);
+      auto C = c_buf.get_access<access::mode::read>(cgh);
+      auto err = err_buf.get_access<access::mode::write>(cgh);
+      cgh.parallel_for(SZ_max, [=](item<1> index) {
+        size_t i = index.get_id(0);
+        TEST_BUILTIN_1(fabs);
+        TEST_BUILTIN_2(fmin);
+        TEST_BUILTIN_2(fmax);
+        TEST_BUILTIN_3(fma);
+      });
+    });
+  }
+  assert(err == 0);
 
   return 0;
 }
