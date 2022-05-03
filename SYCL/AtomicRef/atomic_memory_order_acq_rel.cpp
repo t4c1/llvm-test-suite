@@ -19,7 +19,7 @@ using namespace sycl;
 
 template <memory_order order> void test_acquire_global() {
   const size_t N_items = 1024;
-  const size_t N_iters = 100000;
+  const size_t N_iters = 1000;
 
   int error = 0;
   int val[] = {0, 0};
@@ -63,7 +63,7 @@ template <memory_order order> void test_acquire_local() {
   const size_t local_size = 1024;
   const size_t N_wgs = 16;
   const size_t global_size = local_size * N_wgs;
-  const size_t N_iters = 100000;
+  const size_t N_iters = 1000;
 
   int error = 0;
   int val[] = {0, 0};
@@ -111,7 +111,7 @@ template <memory_order order> void test_acquire_local() {
 
 template <memory_order order> void test_release_global() {
   const size_t N_items = 1024;
-  const size_t N_iters = 100000;
+  const size_t N_iters = 1000;
 
   int error = 0;
   int val[] = {0, 0};
@@ -155,7 +155,7 @@ template <memory_order order> void test_release_local() {
   const size_t local_size = 1024;
   const size_t N_wgs = 16;
   const size_t global_size = local_size * N_wgs;
-  const size_t N_iters = 100000;
+  const size_t N_iters = 1000;
 
   int error = 0;
   int val[] = {0, 0};
