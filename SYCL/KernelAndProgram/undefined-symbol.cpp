@@ -1,4 +1,10 @@
-// XFAIL: cuda || hip || (opencl && gpu)
+// because of problems getting GPU driver uplifted on GitHub Actions
+// this test both fails on GHA and passes on Jenkins.
+// Disabling it until this is sorted
+// REQUIRES: TEMPORARILY_DISABLED
+
+// XFAIL: cuda || hip
+
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out

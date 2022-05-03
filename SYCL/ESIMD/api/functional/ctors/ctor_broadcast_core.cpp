@@ -13,9 +13,6 @@
 // UNSUPPORTED: cuda, hip
 // XRUN: %clangxx -fsycl %s -fsycl-device-code-split=per_kernel -o %t.out
 // XRUN: %GPU_RUN_PLACEHOLDER %t.out
-// RUN: false
-// XFAIL: *
-// TODO The simd filled with unexpected values.
 //
 // Test for simd broadcast constructor.
 // This test uses different data types, sizes and different simd constructor
@@ -27,7 +24,7 @@
 
 #include "ctor_broadcast.hpp"
 
-using namespace sycl::ext::intel::experimental::esimd;
+using namespace sycl::ext::intel::esimd;
 using namespace esimd_test::api::functional;
 
 int main(int, char **) {
