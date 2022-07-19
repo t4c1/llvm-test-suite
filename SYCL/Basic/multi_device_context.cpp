@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <sycl/sycl.hpp>
 
-sycl::event add(sycl::queue& q, sycl::buffer<int>& buff, int *usm,
-                sycl::event& e) {
+sycl::event add(sycl::queue &q, sycl::buffer<int> &buff, int *usm,
+                sycl::event &e) {
   return q.submit([&](sycl::handler &cgh) {
     auto acc = buff.get_access<sycl::access::mode::read_write>(cgh);
     cgh.depends_on(e);
