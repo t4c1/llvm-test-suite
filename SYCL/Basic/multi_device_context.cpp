@@ -6,7 +6,7 @@
 // REQUIRES: cuda
 
 #include <stdlib.h>
-#include <sycl.hpp>
+#include <sycl/sycl.hpp>
 
 sycl::event add(sycl::queue q, sycl::buffer<int> buff, int *usm,
                 sycl::event e) {
@@ -41,22 +41,22 @@ int main() {
     sycl::buffer<int> buff1(&a, 1);
     sycl::buffer<int> buff2(&b, 1);
 
-    // test copying usm
+    // Test copying usm.
     int *usm1 = sycl::malloc_device<int>(1, q1);
     int *usm2 = sycl::malloc_device<int>(1, q2);
     sycl::event e1 = q1.memcpy(usm1, &c, 1);
     sycl::event e2 = q2.memcpy(usm2, &d, 1);
 
-    // test combination of usm and buffers in a kernel
+    // Test combination of usm and buffers in a kernel.
     sycl::event e3 = add(q1, buff1, usm1, e1);
     sycl::event e4 = add(q2, buff2, usm2, e2);
 
-    // change values in usm to ensure results are distinct
+    // Change values in usm to ensure results are distinct.
     sycl::event e5 = q1.memcpy(usm1, &d, 1, e3);
     sycl::event e6 = q2.memcpy(usm2, &c, 1, e4);
 
-    // use each buffer on the other device than before - tests that copying
-    // between devices works
+    // Use each buffer on the other device than before - tests that copying
+    // between devices works.
     add(q1, buff2, usm1, e5);
     add(q2, buff1, usm2, e6);
   }
