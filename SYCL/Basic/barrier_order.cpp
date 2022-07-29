@@ -17,23 +17,21 @@ int main() {
   // test barrier without arguments
   *x = 0;
   for (int i = 0; i < 64; i++) {
-    q.parallel_for(1024, [=](cl::sycl::id<1> ID) {
+    q.single_task([=]() {
       // do some busywork
       float y = *x;
-      for (int j = 0; j < 10000; j++) {
+      for (int j = 0; j < 100; j++) {
         y = sycl::cos(y);
       }
       // update the value
-      if (ID.get(0) == 0)
-        *x *= 2;
+      *x *= 2;
     });
     q.ext_oneapi_submit_barrier();
-    q.parallel_for(1024, [=](cl::sycl::id<1> ID) {
-      if (ID.get(0) == 0)
-        *x += 1;
-    });
+    q.single_task([=]() { *x += 1; });
     q.ext_oneapi_submit_barrier();
   }
+
+  std::cout << std::bitset<8 * sizeof(unsigned long long)>(*x) << std::endl;
 
   q.wait_and_throw();
   error |= (*x != (unsigned long long)-1);
@@ -41,26 +39,24 @@ int main() {
   // test barrier when events are passed arguments
   *x = 0;
   for (int i = 0; i < 64; i++) {
-    sycl::event e = q.parallel_for(1024, [=](cl::sycl::id<1> ID) {
+    sycl::event e = q.single_task([=]() {
       // do some busywork
       float y = *x;
-      for (int j = 0; j < 10000; j++) {
+      for (int j = 0; j < 100; j++) {
         y = sycl::cos(y);
       }
       // update the value
-      if (ID.get(0) == 0)
-        *x *= 2;
+      *x *= 2;
     });
     q.ext_oneapi_submit_barrier({e});
-    e = q.parallel_for(1024, [=](cl::sycl::id<1> ID) {
-      if (ID.get(0) == 0)
-        *x += 1;
-    });
+    e = q.single_task([=]() { *x += 1; });
     q.ext_oneapi_submit_barrier({e});
   }
 
   q.wait_and_throw();
   error |= (*x != (unsigned long long)-1);
+
+  std::cout << std::bitset<8 * sizeof(unsigned long long)>(*x) << std::endl;
 
   std::cout << (error ? "failed\n" : "passed\n");
 
