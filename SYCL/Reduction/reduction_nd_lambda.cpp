@@ -1,5 +1,3 @@
-// Test disabled due to sporadic failure
-// REQUIRES: TEMPORARILY_DISABLED
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
 // RUNx: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
@@ -14,7 +12,7 @@
 
 #include "reduction_nd_range_scalar.hpp"
 
-using namespace cl::sycl;
+using namespace sycl;
 
 template <typename T, access::mode M> class MName;
 
