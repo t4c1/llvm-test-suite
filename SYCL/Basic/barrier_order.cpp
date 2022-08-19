@@ -19,7 +19,7 @@ int main() {
   for (int i = 0; i < 64; i++) {
     q.single_task([=]() {
       // do some busywork
-      float y = *x;
+      volatile float y = *x;
       for (int j = 0; j < 100; j++) {
         y = sycl::cos(y);
       }
@@ -41,7 +41,7 @@ int main() {
   for (int i = 0; i < 64; i++) {
     sycl::event e = q.single_task([=]() {
       // do some busywork
-      float y = *x;
+      volatile float y = *x;
       for (int j = 0; j < 100; j++) {
         y = sycl::cos(y);
       }
