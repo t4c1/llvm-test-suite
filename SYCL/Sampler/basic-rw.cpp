@@ -1,6 +1,5 @@
 // UNSUPPORTED: hip
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
@@ -16,7 +15,6 @@
     SYCL_DEVICE_FILTER=level_zero:gpu ./binx.bin
     SYCL_DEVICE_FILTER=opencl:cpu ./binx.bin
 
-    SYCL_DEVICE_FILTER=opencl:host ./binx.bin
     SYCL_DEVICE_FILTER=opecl:acc ../binx.bin    <--  does not support image
    operations at this time.
 
@@ -25,7 +23,7 @@
 #include "common.hpp"
 #include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 // pixel data-type for RGBA operations (which is the minimum image type)
 using pixelT = sycl::uint4;

@@ -2,7 +2,6 @@
 
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t2.out
 // RUN: env SYCL_PI_TRACE=2 ZE_DEBUG=1 %GPU_RUN_PLACEHOLDER %t2.out 2>&1 %GPU_L0_CHECK_PLACEHOLDER
-// RUN: %HOST_RUN_PLACEHOLDER %t2.out
 // RUN: %CPU_RUN_PLACEHOLDER %t2.out
 // RUN: %GPU_RUN_PLACEHOLDER %t2.out
 // RUN: %ACC_RUN_PLACEHOLDER %t2.out
@@ -12,7 +11,7 @@
 #include <cassert>
 #include <string>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 int main() {
   {

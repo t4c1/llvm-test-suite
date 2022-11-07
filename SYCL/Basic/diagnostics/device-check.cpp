@@ -2,15 +2,12 @@
 // RUN: env SYCL_DEVICE_FILTER=%sycl_be SYCL_DEVICE_TYPE=cpu %t.out
 // RUN: env SYCL_DEVICE_FILTER=%sycl_be SYCL_DEVICE_TYPE=gpu %t.out
 // RUN: env SYCL_DEVICE_FILTER=%sycl_be SYCL_DEVICE_TYPE=acc %t.out
-// RUN: env SYCL_DEVICE_FILTER=%sycl_be SYCL_DEVICE_TYPE=host %t.out
 // RUN: env SYCL_DEVICE_FILTER=%sycl_be SYCL_DEVICE_TYPE=CPU %t.out
 // RUN: env SYCL_DEVICE_FILTER=%sycl_be SYCL_DEVICE_TYPE=GPU %t.out
 // RUN: env SYCL_DEVICE_FILTER=%sycl_be SYCL_DEVICE_TYPE=ACC %t.out
-// RUN: env SYCL_DEVICE_FILTER=%sycl_be SYCL_DEVICE_TYPE=HOST %t.out
 // RUN: env SYCL_DEVICE_FILTER=%sycl_be SYCL_DEVICE_TYPE=Cpu %t.out
 // RUN: env SYCL_DEVICE_FILTER=%sycl_be SYCL_DEVICE_TYPE=Gpu %t.out
 // RUN: env SYCL_DEVICE_FILTER=%sycl_be SYCL_DEVICE_TYPE=Acc %t.out
-// RUN: env SYCL_DEVICE_FILTER=%sycl_be SYCL_DEVICE_TYPE=Host %t.out
 // RUN: env SYCL_DEVICE_FILTER=%sycl_be SYCL_DEVICE_TYPE=XPU %t.out
 
 //==------------------- device-check.cpp --------------------------==//
@@ -22,13 +19,13 @@
 #include <iostream>
 #include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 int main() {
   try {
     queue q = queue();
     auto device = q.get_device();
-    auto deviceName = device.get_info<cl::sycl::info::device::name>();
+    auto deviceName = device.get_info<sycl::info::device::name>();
     std::cout << " Device Name: " << deviceName << std::endl;
   }
 
@@ -36,7 +33,7 @@ int main() {
     if (std::string(E.what()).find("SYCL_DEVICE_TYPE is not recognized.  Must "
                                    "be GPU, CPU, ACC or HOST.") ==
             std::string::npos &&
-        std::string(E.what()).find("No device of requested type available.") ==
+        std::string(E.what()).find("No device of requested type") ==
             std::string::npos) {
       std::cout << "Test failed: received error is incorrect." << std::endl;
       return 1;

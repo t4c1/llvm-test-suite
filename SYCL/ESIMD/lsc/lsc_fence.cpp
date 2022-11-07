@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-// REQUIRES: gpu-intel-pvc
+// REQUIRES: gpu-intel-pvc || esimd_emulator
 // UNSUPPORTED: cuda || hip
 // RUN: %clangxx -fsycl %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
@@ -20,7 +20,7 @@
 #include <sycl/ext/intel/esimd.hpp>
 #include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 using namespace sycl::ext::intel::esimd;
 using namespace sycl::ext::intel::experimental::esimd;
 
@@ -190,8 +190,8 @@ bool testLocal(queue &Q) {
 
 int main() {
   queue Q;
-  std::cout << "Running on " << Q.get_device().get_info<info::device::name>()
-            << std::endl;
+  std::cout << "Running on "
+            << Q.get_device().get_info<sycl::info::device::name>() << std::endl;
 
   bool Passed = true;
   Passed &= testGlobal(Q, 0);

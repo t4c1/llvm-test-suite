@@ -1,10 +1,9 @@
 // UNSUPPORTED: windows
-// RUN: %clangxx -fsycl %s -o %t.out -lpthread
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
+// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out -lpthread
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
-// XFAIL: cuda || hip
+
 #include <sycl/sycl.hpp>
 
 #include <cassert>
@@ -14,7 +13,7 @@
 
 // This test checks that the command graph cleanup works properly when
 // invoked from multiple threads.
-using namespace cl::sycl;
+using namespace sycl;
 
 class Foo;
 

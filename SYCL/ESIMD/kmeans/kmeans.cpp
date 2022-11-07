@@ -20,7 +20,7 @@
 #include <sycl/sycl.hpp>
 #include <vector>
 
-using namespace cl::sycl;
+using namespace sycl;
 using namespace sycl::ext::intel::esimd;
 using namespace std;
 
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
 
   sycl::property_list props{property::queue::enable_profiling{},
                             property::queue::in_order()};
-  queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler(),
+  queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler(),
           props);
 
   auto points4 = malloc_shared<Point4>(NUM_POINTS / SIMD_SIZE, q);

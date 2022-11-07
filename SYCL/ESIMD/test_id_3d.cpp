@@ -19,7 +19,7 @@
 #include <sycl/ext/intel/esimd.hpp>
 #include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 int main(void) {
   constexpr unsigned LocalSizeX = 32;
@@ -31,7 +31,7 @@ int main(void) {
   size_t Y = GlobalRange[1];
   size_t X = GlobalRange[2];
 
-  queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
+  queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler());
 
   auto dev = q.get_device();
   std::cout << "Running on " << dev.get_info<info::device::name>() << "\n";

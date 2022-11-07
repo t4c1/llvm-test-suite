@@ -10,7 +10,7 @@
 constexpr auto BE = sycl::backend::ext_oneapi_level_zero;
 
 int main() {
-  sycl::device Dev{sycl::default_selector{}};
+  sycl::device Dev{sycl::default_selector_v};
 
   sycl::queue Q{Dev};
 
@@ -19,7 +19,7 @@ int main() {
   }
 
   sycl::platform Plt = Dev.get_platform();
-  auto NativePlt = Plt.get_native<BE>();
+  auto NativePlt = sycl::get_native<BE>(Plt);
 
   sycl::platform NewPlt = sycl::make_platform<BE>(NativePlt);
   assert(NewPlt == Plt);

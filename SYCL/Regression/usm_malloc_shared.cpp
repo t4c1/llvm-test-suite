@@ -1,5 +1,4 @@
 // RUN: %clangxx -fsycl %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 
 // This test checks if users will successfully allocate 160, 0, and -16 bytes of
@@ -9,14 +8,14 @@
 #include <iostream>
 #include <stdlib.h>
 #include <sycl/sycl.hpp>
-using namespace cl::sycl;
+using namespace sycl;
 
 int main(int argc, char *argv[]) {
-  auto exception_handler = [](cl::sycl::exception_list exceptions) {
+  auto exception_handler = [](sycl::exception_list exceptions) {
     for (std::exception_ptr const &e : exceptions) {
       try {
         std::rethrow_exception(e);
-      } catch (cl::sycl::exception const &e) {
+      } catch (sycl::exception const &e) {
         std::cout << "Caught asynchronous SYCL "
                      "exception:\n"
                   << e.what() << std::endl;
@@ -24,7 +23,7 @@ int main(int argc, char *argv[]) {
     }
   };
 
-  queue myQueue(default_selector{}, exception_handler);
+  queue myQueue(default_selector_v, exception_handler);
   std::cout << "Device: " << myQueue.get_device().get_info<info::device::name>()
             << std::endl;
 
@@ -40,10 +39,10 @@ int main(int argc, char *argv[]) {
             << std::endl;
 
   // followings should not throw CL_INVALID_VALUE
-  cl::sycl::free(ia, myQueue);
-  cl::sycl::free(nullptr, myQueue);
-  cl::sycl::free(ja, myQueue);
-  cl::sycl::free(result, myQueue);
+  sycl::free(ia, myQueue);
+  sycl::free(nullptr, myQueue);
+  sycl::free(ja, myQueue);
+  sycl::free(result, myQueue);
 
   return 0;
 }

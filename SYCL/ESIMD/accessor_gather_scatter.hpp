@@ -15,7 +15,7 @@
 #include <sycl/ext/intel/esimd.hpp>
 #include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 template <typename T>
 using Acc = accessor<T, 1, access_mode::read_write, access::target::device>;
@@ -108,7 +108,7 @@ template <typename T, unsigned VL, unsigned STRIDE> bool test(queue q) {
 }
 
 int main(void) {
-  queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler());
+  queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler());
 
   auto dev = q.get_device();
   std::cout << "Running on " << dev.get_info<info::device::name>() << "\n";

@@ -5,17 +5,15 @@
 // RUN: env SYCL_DEVICE_FILTER=2 env TEST_DEV_CONFIG_FILE_NAME=%t1.conf %t.out
 // RUN: env SYCL_DEVICE_FILTER=3 env TEST_DEV_CONFIG_FILE_NAME=%t1.conf %t.out
 
-// The test is using all available BEs but CUDA machine in CI does not have
-// functional OpenCL RT
-// UNSUPPORTED: cuda || hip
-// Temporarily disable on L0 due to fails in CI
-// UNSUPPORTED: level_zero
+// Temporarily disable on L0 and HIP due to fails in CI
+// UNSUPPORTED: level_zero, hip
 
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 using namespace std;
 
 const std::map<info::device_type, std::string> DeviceTypeStringMap = {
@@ -28,7 +26,9 @@ const std::map<backend, std::string> BackendStringMap = {
     {backend::opencl, "opencl"},
     {backend::host, "host"},
     {backend::ext_oneapi_level_zero, "ext_oneapi_level_zero"},
-    {backend::ext_intel_esimd_emulator, "ext_intel_esimd_emulator"}};
+    {backend::ext_intel_esimd_emulator, "ext_intel_esimd_emulator"},
+    {backend::ext_oneapi_cuda, "ext_oneapi_cuda"},
+    {backend::ext_oneapi_hip, "ext_oneapi_hip"}};
 
 std::string getDeviceTypeName(const device &d) {
   auto DeviceType = d.get_info<info::device::device_type>();
@@ -108,7 +108,6 @@ int GetPreferredDeviceIndex(const std::vector<device> &devices,
   //   gpu L0, opencl
   //   cpu
   //   acc
-  //   host
   const std::map<info::device_type, int> scoreByType = {
       {info::device_type::cpu, 300},
       {info::device_type::gpu, 500},
@@ -212,17 +211,6 @@ int main() {
     printDeviceType(d);
     assert(devices[targetDevIndex] == d &&
            "The selected device is not the target device specified.");
-  }
-  targetDevIndex = GetPreferredDeviceIndex(devices, info::device_type::host);
-  assert((targetDevIndex >= 0 || deviceNum != 0) &&
-         "Failed to find host device.");
-  if (targetDevIndex >= 0) {
-    host_selector hs;
-    device d = hs.select_device();
-    std::cout << "host_selector selected ";
-    printDeviceType(d);
-    assert(devices[targetDevIndex] == d &&
-           "The selected device is not a host device.");
   }
 
   return 0;

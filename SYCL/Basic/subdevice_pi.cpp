@@ -6,11 +6,12 @@
 // Intel OpenCL CPU Runtime supports device partition on all (multi-core)
 // platforms. Other devices may not support this.
 
+#include <iostream>
 #include <string>
 #include <sycl/sycl.hpp>
 #include <vector>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 // Log to the same stream as SYCL_PI_TRACE
 static void log_pi(const char *msg) { std::cout << msg << std::endl; }
@@ -193,8 +194,7 @@ int main(int argc, const char **argv) {
   std::string test(argv[1]);
   std::string partition_type(argv[2]);
 
-  default_selector selector;
-  device dev(selector);
+  device dev(default_selector_v);
 
   std::vector<int> host_mem(1024, 1);
   buffer<int, 1> buf(&host_mem[0], host_mem.size());

@@ -12,7 +12,7 @@
 
 #include <CL/sycl.hpp>
 #include <ext/intel/esimd.hpp>
-using namespace cl::sycl;
+using namespace sycl;
 using namespace sycl::ext::intel::experimental::esimd;
 
 #define SIMD 16
@@ -73,7 +73,8 @@ int main(int argc, char *argv[]) {
   auto q = sycl::queue(properties);
 
   auto dev = q.get_device();
-  std::cout << "Running on " << dev.get_info<info::device::name>() << "\n";
+  std::cout << "Running on " << dev.get_info<sycl::info::device::name>()
+            << "\n";
 
   int test_result = 0;
   test_result |= test_abs(q, 0xFFFFFFFF);

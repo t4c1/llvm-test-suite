@@ -1,5 +1,4 @@
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
@@ -15,8 +14,7 @@
 
 #include <iostream>
 
-using namespace cl;
-using sycl_access_mode = cl::sycl::access::mode;
+using sycl_access_mode = sycl::access::mode;
 
 // Execute functor provided passing a queue created with default device selector
 // and async handler then waits for the tasks submitted to queue to finish. If

@@ -17,7 +17,7 @@
 #include <sycl/ext/intel/esimd.hpp>
 #include <sycl/sycl.hpp>
 
-using namespace cl::sycl;
+using namespace sycl;
 
 #define NUM_BINS 256
 #define IMG_WIDTH 1024
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
   // Read in image luma plane
 
   // Allocate Input Buffer
-  queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler(),
+  queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler(),
           property::queue::enable_profiling{});
 
   auto dev = q.get_device();

@@ -1,7 +1,6 @@
 // REQUIRES: opencl, opencl_icd
 
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out %opencl_lib
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
@@ -18,8 +17,8 @@
 int main() {
   try {
     std::cout << "Create default event" << std::endl;
-    cl::sycl::event e;
-  } catch (cl::sycl::device_error e) {
+    sycl::event e;
+  } catch (sycl::device_error e) {
     std::cout << "Failed to create device for event" << std::endl;
   }
 }

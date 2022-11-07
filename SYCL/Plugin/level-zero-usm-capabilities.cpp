@@ -15,10 +15,10 @@
 // CHECK:  usm_atomic_host_allocations: 0
 // CHECK:  usm_atomic_shared_allocations: 0
 
-using namespace cl::sycl;
+using namespace sycl;
 
 int main() {
-  auto D = device(gpu_selector());
+  auto D = device(gpu_selector_v);
   std::cout << "name = " << D.get_info<info::device::name>() << std::endl;
 
   std::cout << "  usm_host_allocations: " << D.has(aspect::usm_host_allocations)
