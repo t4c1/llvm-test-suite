@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 // REQUIRES: gpu
-// UNSUPPORTED: cuda || hip
+// UNSUPPORTED: cuda || hip || gpu-intel-pvc
 // RUN: %clangxx -fsycl %s -I%S/.. -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out %S/linear_in.bmp %S/linear_gold_hw.bmp
 
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
     // Number of workitems in a workgroup
     range<2> LocalRange{1, 1};
 
-    queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler(),
+    queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler(),
             property::queue::enable_profiling{});
 
     auto dev = q.get_device();

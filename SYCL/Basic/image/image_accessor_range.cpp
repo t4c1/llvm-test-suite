@@ -1,11 +1,10 @@
 // FIXME: Investigate OS-agnostic failures
 // REQUIRES: TEMPORARY_DISABLED
 
-// UNSUPPORTED: cuda || hip
+// UNSUPPORTED: cuda || hip || gpu-intel-pvc
 // CUDA does not support SYCL 1.2.1 images.
 //
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 

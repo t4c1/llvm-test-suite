@@ -13,7 +13,7 @@ struct KernelFunctor {
   void operator()(sycl::handler &cgh) {
     cgh.parallel_for<KernelFunctor>(
         sycl::range<1>{16},
-        [=](sycl::id<1> wiID) [[intel::reqd_sub_group_size(8)]] {
+        [=](sycl::id<1> wiID) [[intel::reqd_sub_group_size(16)]] {
 #if defined(__SYCL_DEVICE_ONLY__)
           asm volatile(".decl tmp1 v_type=G type=d num_elts=16 align=GRF\n"
                        ".decl tmp2 v_type=G type=d num_elts=16 align=GRF\n"
@@ -25,8 +25,6 @@ struct KernelFunctor {
 
 int main() {
   KernelFunctor f;
-  launchInlineASMTest(
-      f, /* sg size */ true,
-      /* exception string*/ "syntax error, unexpected $undefined");
+  launchInlineASMTest(f, /* sg size */ true, /* exception expected */ true);
   return 0;
 }

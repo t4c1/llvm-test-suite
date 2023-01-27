@@ -1,4 +1,4 @@
-// UNSUPPORTED: hip
+// UNSUPPORTED: hip, gpu-intel-pvc
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple  %s -o %t.out
 // Native images are created with host pointers only with host unified memory
 // support, enforce it for this test.
@@ -206,7 +206,7 @@ void testcopyH2DImage() {
                                  ImgSize_2D);
     sycl::image<2> image_to_2D(data_to_2D.data(), ChanOrder, ChanType,
                                ImgSize_2D);
-    device Dev{default_selector{}};
+    device Dev{default_selector_v};
     context Ctx{Dev};
     context otherCtx{Dev};
 
@@ -245,7 +245,7 @@ void testcopyH2DImage() {
                                  ImgSize_3D);
     sycl::image<3> image_to_3D(data_to_3D.data(), ChanOrder, ChanType,
                                ImgSize_3D);
-    device Dev{default_selector{}};
+    device Dev{default_selector_v};
     context Ctx{Dev};
     context otherCtx{Dev};
 

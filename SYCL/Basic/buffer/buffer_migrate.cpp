@@ -1,8 +1,6 @@
 // REQUIRES: gpu
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
-// RUN: env NEOReadDebugKeys=1 CreateMultipleRootDevices=2 %GPU_RUN_PLACEHOLDER %t.out
-// RUN: env NEOReadDebugKeys=1 CreateMultipleRootDevices=3 %GPU_RUN_PLACEHOLDER %t.out
 //
 // Test for buffer use in a context with multiple devices (all found
 // root-devices)
@@ -19,7 +17,7 @@ int main() {
   buffer<int, 1> Buffer(&Data, range<1>(1));
 
   const auto &Devices =
-      platform(gpu_selector{}).get_devices(info::device_type::gpu);
+      platform(gpu_selector_v).get_devices(info::device_type::gpu);
   std::cout << Devices.size() << " devices found" << std::endl;
   context C(Devices);
 

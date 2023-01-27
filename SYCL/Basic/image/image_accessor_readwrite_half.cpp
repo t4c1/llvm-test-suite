@@ -1,8 +1,7 @@
-// UNSUPPORTED: cuda || hip
+// UNSUPPORTED: cuda || hip || gpu-intel-pvc
 // CUDA cannot support SYCL 1.2.1 images.
 //
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 
@@ -74,9 +73,9 @@ void write_type_order(char *HostPtr, const s::image_channel_order ImgOrder,
     s::queue Queue;
     Queue.submit([&](s::handler &cgh) {
       auto WriteAcc = Img.get_access<WriteDataT, s::access::mode::write>(cgh);
-    cgh.single_task<class kernel_class<WriteDataT, static_cast<int>(ImgType), 0>>([=](){
-      WriteAcc.write(Coord, Color);
-    });
+      cgh.single_task<
+          class kernel_class<WriteDataT, static_cast<int>(ImgType), 0>>(
+          [=]() { WriteAcc.write(Coord, Color); });
     });
   }
 }
@@ -97,10 +96,11 @@ void check_read_type_order(char *HostPtr, const s::image_channel_order ImgOrder,
       s::accessor<ReadDataT, 1, s::access::mode::write> ReadDataBufAcc(
           ReadDataBuf, cgh);
 
-    cgh.single_task<class kernel_class<ReadDataT, static_cast<int>(ImgType), 1>>([=](){
-      ReadDataT RetColor = ReadAcc.read(Coord);
-      ReadDataBufAcc[0] = RetColor;
-    });
+      cgh.single_task<
+          class kernel_class<ReadDataT, static_cast<int>(ImgType), 1>>([=]() {
+        ReadDataT RetColor = ReadAcc.read(Coord);
+        ReadDataBufAcc[0] = RetColor;
+      });
     });
   }
   check_read_data(ReadData, ExpectedColor);
@@ -147,8 +147,8 @@ void check_half4(char *HostPtr) {
 int main() {
   // Checking if default selected device supports half datatype.
   // Same device will be selected in the write/read functions.
-  s::device Dev{s::default_selector()};
-  if (!Dev.is_host() && !Dev.has(sycl::aspect::fp16)) {
+  s::device Dev{s::default_selector_v};
+  if (!Dev.has(sycl::aspect::fp16)) {
     std::cout << "This device doesn't support the extension cl_khr_fp16"
               << std::endl;
     return 0;

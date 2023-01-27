@@ -1,10 +1,8 @@
 // RUN: %clangxx -fsycl %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 
 // RUN: %clangxx -fsycl -fsycl-device-lib-jit-link %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 
@@ -198,6 +196,18 @@ void device_complex_test_2(s::queue &deviceQueue) {
 #endif
 int main() {
   s::queue deviceQueue;
+
+#ifdef _WIN32
+  // std::complex math on Windows uses doubles internally so fp64 is required to
+  // run this test.
+  if (!deviceQueue.get_device().has(s::aspect::fp64)) {
+    std::cout << "Skipping test as device does not support fp64 which is "
+                 "required for math operations on std::complex on Windows."
+              << std::endl;
+    return 0;
+  }
+#endif
+
   device_complex_test_1(deviceQueue);
 #ifndef _WIN32
   device_complex_test_2(deviceQueue);

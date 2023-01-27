@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
             << std::endl;
   sycl::range<2> LocalRange{1, 1};
 
-  queue q(esimd_test::ESIMDSelector{}, esimd_test::createExceptionHandler(),
+  queue q(esimd_test::ESIMDSelector, esimd_test::createExceptionHandler(),
           property::queue::enable_profiling{});
 
   auto dev = q.get_device();
@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
 
                 simd<unsigned, WIDTH> elm16_off =
                     elm16 * sizeof(float) + out_off;
-                scatter<float, WIDTH>(outputMatrix, sum, elm16_off, p);
+                scatter<float, WIDTH>(outputMatrix, elm16_off, sum, p);
                 out_off += DIM_SIZE * sizeof(float);
 
                 if (v_pos * HEIGHT + 10 + i >= DIM_SIZE - 1)

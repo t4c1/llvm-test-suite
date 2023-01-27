@@ -1,8 +1,6 @@
-// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple -D HALF_IS_SUPPORTED %s -o %t_gpu.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
+// RUN: %clangxx -fsycl -fsycl-device-code-split=per_kernel -fsycl-targets=%sycl_triple %s -o %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
-// RUN: %GPU_RUN_PLACEHOLDER %t_gpu.out
+// RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
 
 #include <iostream>
@@ -47,7 +45,7 @@ int main() {
   test_nan_call<s::ushort2, s::half2>();
   test_nan_call<s::uint2, s::float2>();
   test_nan_call<s::ulong2, s::double2>();
-  test_nan_call<s::ulonglong2, s::double2>();
+  test_nan_call<s::vec<unsigned long long, 2>, s::double2>();
 
   s::queue Queue([](sycl::exception_list ExceptionList) {
     for (std::exception_ptr ExceptionPtr : ExceptionList) {
@@ -60,10 +58,10 @@ int main() {
       }
     }
   });
-#ifdef HALF_IS_SUPPORTED
+
   if (Queue.get_device().has(sycl::aspect::fp16))
     check_nan<unsigned short, s::half>(Queue);
-#endif
+
   check_nan<unsigned int, float>(Queue);
   if (Queue.get_device().has(sycl::aspect::fp64)) {
     check_nan<unsigned long, double>(Queue);

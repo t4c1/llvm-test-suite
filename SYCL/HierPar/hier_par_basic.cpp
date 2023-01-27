@@ -7,7 +7,6 @@
 //===----------------------------------------------------------------------===//
 
 // RUN: %clangxx -fsycl -fsycl-targets=%sycl_triple %s -o %t.out
-// RUN: %HOST_RUN_PLACEHOLDER %t.out
 // RUN: %CPU_RUN_PLACEHOLDER %t.out
 // RUN: %GPU_RUN_PLACEHOLDER %t.out
 // RUN: %ACC_RUN_PLACEHOLDER %t.out
@@ -22,7 +21,7 @@
 using namespace sycl;
 
 template <typename GoldFnTy>
-bool verify(int testcase, int range_length, int *ptr, GoldFnTy get_gold) {
+bool verify(int testcase, int range_length, const int *ptr, GoldFnTy get_gold) {
   int err_cnt = 0;
 
   for (int i = 0; i < range_length; i++) {

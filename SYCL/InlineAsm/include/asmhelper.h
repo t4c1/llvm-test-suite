@@ -91,8 +91,9 @@ auto exception_handler = [](sycl::exception_list exceptions) {
 };
 
 template <typename F>
-bool launchInlineASMTestImpl(F &f, bool requires_particular_sg_size = true) {
-  sycl::queue deviceQueue(sycl::gpu_selector{}, exception_handler);
+bool launchInlineASMTestImpl(F &f, bool requires_particular_sg_size = true,
+                             std::vector<int> RequiredSGSizes = {}) {
+  sycl::queue deviceQueue(sycl::gpu_selector_v, exception_handler);
   sycl::device device = deviceQueue.get_device();
 
   if (!isInlineASMSupported(device)) {
@@ -108,6 +109,16 @@ bool launchInlineASMTestImpl(F &f, bool requires_particular_sg_size = true) {
     return false;
   }
 
+  auto sg_sizes = device.get_info<sycl::info::device::sub_group_sizes>();
+  if (std::any_of(RequiredSGSizes.begin(), RequiredSGSizes.end(),
+                  [&](size_t RequiredSGSize) {
+                    return std::find(sg_sizes.begin(), sg_sizes.end(),
+                                     RequiredSGSize) == sg_sizes.end();
+                  })) {
+    std::cout << "Skipping test\n";
+    return false;
+  }
+
   deviceQueue.submit(f).wait_and_throw();
 
   return true;
@@ -118,22 +129,19 @@ bool launchInlineASMTestImpl(F &f, bool requires_particular_sg_size = true) {
 /// \returns false if test wasn't launched (i.e.was skipped) and true otherwise
 template <typename F>
 bool launchInlineASMTest(F &f, bool requires_particular_sg_size = true,
-                         std::string exception_string = "") {
+                         bool exception_expected = false,
+                         std::vector<int> RequiredSGSizes = {}) {
   bool result = false;
   try {
-    result = launchInlineASMTestImpl(f, requires_particular_sg_size);
+    result = launchInlineASMTestImpl(f, requires_particular_sg_size,
+                                     RequiredSGSizes);
   } catch (sycl::exception &e) {
     std::string what = e.what();
-    if (!exception_string.empty()) {
-      if (what.find(exception_string) != std::string::npos) {
-        std::cout << "Caught expected exception: " << what << std::endl;
-      } else {
-        std::cout << "Failed to catch expected exception: " << exception_string
-                  << std::endl;
-        throw e;
-      }
+    if (exception_expected &&
+        what.find("PI_ERROR_BUILD_PROGRAM_FAILURE") != std::string::npos) {
+      std::cout << "Caught expected exception: " << what << std::endl;
     } else {
-      std::cout << "Caught unexpected exception: " << std::endl;
+      std::cout << "Caught unexpected exception." << std::endl;
       throw e;
     }
   }
